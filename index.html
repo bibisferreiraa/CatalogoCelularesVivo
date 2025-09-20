@@ -174,6 +174,21 @@
       .sw{ width:22px; height:22px }
     }
 
+    .modal-content{
+        display:flex;            /* permite dividir mídia e body verticalmente */
+        flex-direction:column;
+        max-height:100dvh;       /* usa viewport “dinâmico” para desconsiderar barra de endereço */
+        overflow:hidden;         /* mantém o fundo oculto; o scroll ocorre dentro do .modal-body */
+      }
+      .modal-grid{
+        display:flex;
+        flex-direction:column;
+        gap:12px;                /* mantém seu espaçamento original */
+        padding:12px;            /* mantém seu padding original */
+        flex:1 1 auto;
+        min-height:0;            /* CRÍTICO: permite que o filho rolável realmente role */
+      }
+
     .helper{
       font-size: 15px;
     }
@@ -191,7 +206,7 @@
           <h1>Catálogo de Aparelhos • Vivo</h1>
           <small class="helper">Sou a Bianca, estou à disposição para tirar suas dúvidas ou reserver o seu celular agora!</small>
           <p></p>
-          <small class="helper_aux">Chame Aqui: 🟢<a href="wa.me/5562998001804">WhatsApp</a></small>
+          <small class="helper_aux">Chame Aqui: 🟢<a href="https:wa.me/5562998001804">WhatsApp</a></small>
           
         </div>
       </div>
