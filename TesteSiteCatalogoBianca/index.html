@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catálogo Vivo — Aparelhos</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{
+      --bg:#0f0f14;
+      --card:#161621;
+      --muted:#8e8ea0;
+      --text:#f8f8ff;
+      --accent:#7F00FF; /* roxo Vivo aproximado */
+      --accent-2:#5b20ff;
+      --ok:#1db954;
+      --warn:#f59e0b;
+      --ring: 0 0 0 2px color-mix(in srgb, var(--accent), transparent 50%);
+      --sticky-offset: 72px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#f7f7fb; --card:#ffffff; --text:#101014; --muted:#5b5b6a; }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:radial-gradient(1200px 800px at 100% -20%, color-mix(in srgb, var(--accent), transparent 85%), transparent 60%),
+                 radial-gradient(1000px 700px at -10% -10%, color-mix(in srgb, var(--accent-2), transparent 85%), transparent 60%),
+                 var(--bg);
+      color:var(--text);
+      line-height:1.35;
+    }
+    .container{max-width:1200px; margin-inline:auto; padding:20px;}
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(1.2) blur(6px);
+      background:linear-gradient(180deg, color-mix(in srgb, var(--bg), transparent 10%), transparent);
+      border-bottom:1px solid color-mix(in srgb, var(--accent), transparent 80%);
+    }
+    .hero{display:flex; gap:16px; align-items:center; padding:12px 20px;}
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{
+      width:36px; height:36px; border-radius:10px; display:grid; place-items:center; color:white;
+      background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight:700; letter-spacing:0.5px;
+    }
+    .title h1{font-size:clamp(18px, 4vw, 24px); margin:0}
+    .title small{color:var(--muted)}
+
+    .toolbar{display:grid; gap:10px; grid-template-columns:1fr; padding:10px 20px 18px;}
+    @media (min-width:700px){
+      .toolbar{grid-template-columns: 1.2fr repeat(4, minmax(0,1fr)); align-items:end}
+    }
+    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+    input[type="search"], select{
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid color-mix(in srgb, var(--accent), transparent 75%);
+      background:var(--card); color:var(--text); outline:none; box-shadow:none;
+    }
+    input[type="search"]:focus, select:focus{ box-shadow: var(--ring); border-color: var(--accent)}
+
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .chip{padding:6px 10px; border:1px solid color-mix(in srgb, var(--accent), transparent 70%); border-radius:999px; font-size:12px; color:var(--muted)}
+    .btn{
+      appearance:none; border:1px solid color-mix(in srgb, var(--accent), transparent 60%); background:linear-gradient(180deg, color-mix(in srgb,var(--accent), transparent 80%), transparent);
+      color:var(--text); border-radius:12px; padding:10px 12px; font-weight:600; cursor:pointer; transition:transform .05s ease;
+    }
+    .btn:hover{filter:saturate(1.2)}
+    .btn:active{transform:translateY(1px)}
+    .btn.ghost{background:transparent}
+    .btn.primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); border-color:transparent}
+
+    /* Seções por marca */
+    section.brand-block{margin:18px 0 28px}
+    section.brand-block > header{position:relative; top:auto; backdrop-filter:none; background:transparent; border:0;}
+    .brand-header{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 4px;}
+    .brand-header h2{margin:0; font-size:clamp(18px, 3vw, 22px)}
+
+    .scrollbox{position:relative}
+    .track{display:grid; grid-auto-flow:column; grid-auto-columns: minmax(220px, 1fr); gap:12px; overflow-x:auto; scrollbar-width:thin; scroll-snap-type:x mandatory; padding:8px 4px 8px 2px}
+    .track::-webkit-scrollbar{height:10px}
+    .track::-webkit-scrollbar-thumb{background: color-mix(in srgb, var(--accent), transparent 60%); border-radius:10px}
+
+    .fade::before, .fade::after{
+      content:""; position:absolute; inset:0; pointer-events:none; display:block;
+      /* Fade lateral mais leve para não escurecer as setas */
+      background:linear-gradient(90deg,
+        color-mix(in srgb, var(--bg), transparent 92%) 0%,
+        color-mix(in srgb, var(--bg), transparent 96%) 6%,
+        transparent 14%,
+        transparent 86%,
+        color-mix(in srgb, var(--bg), transparent 96%) 94%,
+        color-mix(in srgb, var(--bg), transparent 92%) 100%
+      );
+    }
+
+    .nav-btn{position:absolute; top:50%; translate:0 -50%; z-index:1; border-radius:999px; width:36px; height:36px; display:grid; place-items:center; background:var(--card); border:1px solid color-mix(in srgb, var(--accent), transparent 70%)}
+    .nav-btn.left{left:-6px}
+    .nav-btn.right{right:-6px}
+
+    .phone-card{scroll-snap-align:start; background:var(--card); border:1px solid color-mix(in srgb, var(--accent), transparent 80%); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:10px; min-height: 290px}
+    .tag-row{display:flex; gap:6px; flex-wrap:wrap}
+    .tag{font-size:11px; padding:4px 8px; border-radius:999px; color:var(--muted); border:1px dotted color-mix(in srgb, var(--accent), transparent 70%)}
+    .imgbox{
+      border-radius:12px; background: conic-gradient(from 200deg, color-mix(in srgb, var(--accent), transparent 80%), transparent);
+      aspect-ratio: 16/10; display:grid; place-items:center; overflow:hidden; border:1px solid color-mix(in srgb, var(--accent), transparent 75%)
+    }
+    .imgbox .ph{font-weight:800; font-size:52px; opacity:.18}
+    .title-row{display:flex; align-items:center; justify-content:space-between; gap:8px}
+    .title-row h3{margin:0; font-size:16px; letter-spacing:.2px}
+    .swatches{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+    .sw{width:18px; height:18px; border-radius:50%; border:1px solid color-mix(in srgb, var(--accent), transparent 70%); background: var(--sw,#ccc); cursor:pointer}
+    .sw[aria-selected="true"]{outline:2px solid var(--accent); outline-offset:2px}
+    .prices{display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:8px}
+    .price{border:1px solid color-mix(in srgb, var(--accent), transparent 75%); border-radius:12px; padding:8px}
+    .price small{display:block; color:var(--muted); font-size:11px}
+    .price strong{display:block; font-size:9px; margin-top:4px}
+    .meta{display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:12px}
+
+    /* Modo vitrine (para exibir à distância) */
+    .vitrine header, .vitrine .toolbar, .vitrine .footnote{display:none}
+    .vitrine .track{grid-auto-columns: minmax(260px, 1fr)}
+    .vitrine .phone-card{min-height: 320px}
+
+    .results-line{display:flex; align-items:center; justify-content:space-between; padding:0 4px; color:var(--muted); font-size:13px}
+    .footnote{color:var(--muted); font-size:12px; margin-top:8px}
+    a.anchor{color:inherit; text-decoration:none}
+    .brand-dot{width:10px; height:10px; border-radius:99px; display:inline-block; margin-right:6px}
+    .b-samsung{background:#00a3ff}
+    .b-apple{background:#888}
+    .b-moto{background:#00E1A1}
+
+    /* Offset para âncoras respeitando o header */
+    :where(section.brand-block, section, [id]){scroll-margin-top: calc(var(--sticky-offset, 72px) + 10px);}
+    html{ scroll-padding-top: var(--sticky-offset, 72px); }
+
+    @media (max-width:640px){
+      header{ position: static; } /* evita tampar conteúdo no mobile */
+      .fade::before, .fade::after{
+        background:linear-gradient(90deg,
+          color-mix(in srgb, var(--bg), transparent 96%) 0%,
+          transparent 10%,
+          transparent 90%,
+          color-mix(in srgb, var(--bg), transparent 96%) 100%
+        );
+      }
+    }
+
+    /* Modal */
+    .modal{position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px}
+    .modal.open{display:flex}
+    .modal-content{position:relative; max-width:min(1000px, 96vw); width:100%; background:var(--card); border-radius:16px; border:1px solid color-mix(in srgb, var(--accent), transparent 75%); box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .modal-grid{display:grid; grid-template-columns:1fr; gap:16px; padding:16px}
+    @media(min-width:860px){.modal-grid{grid-template-columns:1fr 1.2fr; padding:20px; gap:20px}}
+    .modal-media{border-radius:12px; border:1px solid color-mix(in srgb, var(--accent), transparent 80%); background:radial-gradient(600px 400px at 20% 0%, color-mix(in srgb, var(--accent), transparent 85%), transparent 60%)}
+    .modal-media img{width:100%; height:100%; object-fit:contain; display:block; border-radius:12px; background:transparent; min-height:260px}
+    .modal-media .placeholder{display:grid; place-items:center; min-height:260px; font-size:72px; opacity:.2}
+    .modal-close{position:absolute; top:8px; right:8px; border:1px solid color-mix(in srgb, var(--accent), transparent 70%); background:var(--card); color:var(--text); border-radius:10px; width:36px; height:36px; cursor:pointer}
+    .modal h3{margin:.25rem 0 .5rem}
+    .specs{display:grid; grid-template-columns:1fr; gap:8px; margin-top:8px}
+    .specs dt{color:var(--muted); font-size:12px}
+    .specs dd{margin:0 0 6px 0}
+    @media(min-width:560px){.specs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    /* Ajuste fino do modal no celular */
+    @media (max-width: 560px){
+      .modal{ padding:8px }
+      .modal-content{
+        width:100%; max-width:100%; max-height:92vh;
+        border-radius:12px; overflow:hidden;
+      }
+      .modal-grid{ grid-template-columns:1fr; gap:12px; padding:12px }
+      .modal-media{ min-height:220px }
+      .modal-media img{ max-height:46vh }
+      .modal-body{
+        max-height: calc(92vh - 280px);
+        overflow:auto; padding-right:4px
+      }
+      .modal-close{ width:40px; height:40px }
+      .sw{ width:22px; height:22px }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container hero" role="banner">
+      <div class="brand" aria-label="Vivo - Catálogo de aparelhos">
+        <div class="logo" aria-hidden="true">V</div>
+        <div class="title">
+          <h1>Catálogo de Aparelhos • Vivo</h1>
+          <small>Preços: normal • com plano Base • com plano Médio</small>
+        </div>
+      </div>
+      <div class="row" style="margin-left:auto; gap:10px">
+        <button id="btnVitrine" class="btn ghost" title="Oculta controles para exibir ao cliente">Modo vitrine</button>
+        <a class="btn" href="#apple">Apple</a>
+        <a class="btn" href="#samsung">Samsung</a>
+        <a class="btn" href="#motorola">Motorola</a>
+      </div>
+    </div>
+    <div class="container toolbar" role="region" aria-label="Filtros e busca">
+      <div>
+        <label for="q">Buscar modelo</label>
+        <input id="q" type="search" placeholder="Ex.: A35, S24, iPhone 16, Edge 50…" autocomplete="off" />
+      </div>
+      <div>
+        <label for="segmento">Tipo</label>
+        <select id="segmento">
+          <option value="">Todos</option>
+          <option value="entrada">Entrada</option>
+          <option value="intermediario">Intermediário</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+      <div>
+        <label for="so">Sistema</label>
+        <select id="so">
+          <option value="">Android + iOS</option>
+          <option value="Android">Android</option>
+          <option value="iOS">iOS</option>
+        </select>
+      </div>
+      <div>
+        <label for="extras">Extras</label>
+        <div class="row">
+          <label class="chip"><input id="f5g" type="checkbox" /> 5G apenas</label>
+          <label class="chip"><input id="festoque" type="checkbox" /> Em estoque</label>
+        </div>
+      </div>
+      <div>
+        <label for="ordenar">Ordenar</label>
+        <select id="ordenar">
+          <option value="az">A → Z</option>
+          <option value="preco-normal">Menor preço (Normal)</option>
+          <option value="preco-base">Menor preço (Plano Base)</option>
+          <option value="preco-medio">Menor preço (Plano Médio)</option>
+        </select>
+      </div>
+      <div class="row" style="grid-column:1/-1; justify-content:flex-end; gap:10px">
+        <span id="results" class="chip" aria-live="polite">0 modelos</span>
+        <button id="limpar" class="btn ghost">Limpar filtros</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="app" tabindex="-1">
+
+    <!-- Seções por marca -->
+    <section id="apple" class="brand-block" aria-label="Apple">
+      <div class="brand-header">
+        <h2><span class="brand-dot b-apple"></span>Apple</h2>
+        <a class="anchor" href="#top">Topo ↑</a>
+      </div>
+      <div class="scrollbox fade">
+        <button class="nav-btn left" aria-label="Rolar para a esquerda" data-target="apple">⟵</button>
+        <div class="track" data-brand="Apple" role="list"></div>
+        <button class="nav-btn right" aria-label="Rolar para a direita" data-target="apple">⟶</button>
+      </div>
+    </section>
+
+    <section id="samsung" class="brand-block" aria-label="Samsung">
+      <div class="brand-header">
+        <h2><span class="brand-dot b-samsung"></span>Samsung</h2>
+        <a class="anchor" href="#top">Topo ↑</a>
+      </div>
+      <div class="scrollbox fade">
+        <button class="nav-btn left" aria-label="Rolar para a esquerda" data-target="samsung">⟵</button>
+        <div class="track" data-brand="Samsung" role="list"></div>
+        <button class="nav-btn right" aria-label="Rolar para a direita" data-target="samsung">⟶</button>
+      </div>
+    </section>
+
+    <section id="motorola" class="brand-block" aria-label="Motorola">
+      <div class="brand-header">
+        <h2><span class="brand-dot b-moto"></span>Motorola</h2>
+        <a class="anchor" href="#top">Topo ↑</a>
+      </div>
+      <div class="scrollbox fade">
+        <button class="nav-btn left" aria-label="Rolar para a esquerda" data-target="motorola">⟵</button>
+        <div class="track" data-brand="Motorola" role="list"></div>
+        <button class="nav-btn right" aria-label="Rolar para a direita" data-target="motorola">⟶</button>
+      </div>
+    </section>
+
+    <div class="results-line">
+      <div>
+        <span class="brand-dot b-apple"></span>Apple
+        <span class="brand-dot b-samsung"></span>Samsung
+        <span class="brand-dot b-moto"></span>Motorola
+      </div>
+      <a class="anchor" href="#top">Voltar ao topo ↑</a>
+    </div>
+
+    <p class="footnote">* Valores ilustrativos. Consulte condições de fidelidade (12 meses), elegibilidade de plano e estoques. Preços “Plano Base/Médio” assumem adesão/upgrade conforme política da loja.</p>
+
+  </main>
+
+  <!-- Modal de detalhes do aparelho -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <button class="modal-close" aria-label="Fechar">×</button>
+      <div class="modal-grid">
+        <div class="modal-media" id="modalMedia">
+          <div class="placeholder" id="modalPh">?</div>
+          <img id="modalImg" alt="" hidden>
+        </div>
+        <div class="modal-body">
+          <h3 id="modalTitle"></h3>
+          <div class="tag-row" id="modalTags"></div>
+          <div class="prices" id="modalPrices"></div>
+          <div class="swatches" id="modalSwatches"></div>
+          <dl class="specs" id="modalSpecs"></dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Ajusta o offset para âncoras conforme altura do header (especialmente no mobile)
+  function updateStickyOffset(){
+    const h = document.querySelector('header')?.offsetHeight || 72;
+    document.documentElement.style.setProperty('--sticky-offset', h + 'px');
+  }
+
+  // ================================================
+  // Catálogo modular — edite os aparelhos abaixo 👇
+  // Campos: id, brand, model, os, segment, is5g, inStock,
+  //         image (padrão), colors[{name, hex, img?}],
+  //         prices{normal, base, medio}, specs{...}
+  // ================================================
+  const phones = [
+    // APPLE
+
+// IPHONE 16 PRO MAX 256GB, BLACK, DESERT E NATURAL
+    {id:"a-16pm", brand:"Apple", model:"iPhone 16 Pro Max", os:"iOS", segment:"premium", is5g:true, inStock:true,
+     image:"images/apple/16pmtitaniopreto.jpeg",
+     colors:[
+       {name:"Titânio Preto", hex:"#1f1f21", img:"images/apple/16pmtitaniopreto.jpeg"},
+       {name:"Titânio Desert", hex:"#e3e3e3", img:"images/apple/16pmdesert.jpeg"},
+       {name:"Titânio Natural", hex:"#b9b7b0", img:"images/apple/16pmnaturaltitanium.jpeg"}
+     ],
+     prices:{normal:11799, base:9999, medio:9399},
+     specs:{battery:"4685 mAh", camera:"Tripa 48MP + 12MP ultra + 48MP periscópio • 12MP frontal", osVersion:"iOS 18", chipset:"A18 Pro", 
+     display:"6.9\" XDR OLED 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"IP68", extras:["USB-C","Action Button"]}},
+
+// IPHONE 16 256GB BLACK E WHITE
+    {id:"a-16", brand:"Apple", model:"iPhone 16", os:"iOS", segment:"premium", is5g:true, inStock:true,
+     image:"images/apple/16preto.jpeg",
+     colors:[
+       {name:"Preto", hex:"#1f1f21", img:"images/apple/16preto.jpeg"},
+       {name:"Branco", hex:"#e3e3e3", img:"images/apple/16branco.jpeg"}
+     ],
+     prices:{normal:6999, base:5999, medio:5799},
+     specs:{battery:"3561 mAh", camera:"48MP + 12 • 12MP frontal", osVersion:"iOS 18", chipset:"A18", 
+     display:"6.1\" XDR OLED 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"IP68", extras:["USB-C","Action Button"]}},
+
+// IPHONE 16e 256GB BLACK E WHITE
+    {id:"a-16e", brand:"Apple", model:"iPhone 16e", os:"iOS", segment:"intermediario", is5g:true, inStock:false,
+     image:"images/apple/16epreto.jpeg",
+     colors:[
+       {name:"Preto", hex:"#1f1f21",    img:"images/apple/16epreto.jpeg"},
+       {name:"Branco", hex:"#e3e3e3",  img:"images/apple/16ebranco.jpeg"}
+     ],
+     prices:{normal:4999, base:4399, medio:4099},
+     specs:{battery:"3961 mAh", camera:"Dupla 48MP • 12MP frontal", osVersion:"iOS 18", chipset:"A18", 
+     display:"6.1\" XDR OLED 60Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"IP68"}},
+
+// IPHONE 15 256GB BLUE E BLACK
+    {id:"a-15", brand:"Apple", model:"iPhone 15", os:"iOS", segment:"entrada", is5g:true, inStock:true,
+     image:"images/apple/15azul.jpeg",
+     colors:[
+       {name:"Azul",    hex:"#B2B5EB",  img:"images/apple/15azul.jpeg"},
+       {name:"Preto",       hex:"#1f1f21",  img:"images/apple/15preto.jpeg"},
+     ],
+     prices:{normal:5599, base:4699, medio:4499},
+     specs:{battery:"3349 mAh", camera:"Dupla 48 + 12MP • 12MP frontal", osVersion:"iOS 18", chipset:"A16 Bionic", 
+     display:"6.1\" XDR OLED 60Hz", ram:"6 GB", storage:["256 GB"], waterResistance:"IP68"}},
+
+// IPHONE 14 256GB MIDNIGHT E STARLIGHT     
+     {id:"a-14", brand:"Apple", model:"iPhone 14", os:"iOS", segment:"entrada", is5g:true, inStock:true,
+     image:"images/apple/14midnight.jpeg",
+     colors:[
+       {name:"Meia-noite",    hex:"#000000",  img:"images/apple/14midnight.jpeg"},
+       {name:"Estelar",       hex:"#FFFFFF",  img:"images/apple/14estelar.jpeg"},
+     ],
+     prices:{normal:5049, base:3999, medio:3799},
+     specs:{battery:"3279 mAh", camera:"Dupla 12MP + 12 • 12MP frontal", osVersion:"iOS 18", chipset:"A15 Bionic", 
+     display:"6.1\" XDR OLED 60Hz", ram:"6 GB", storage:["256 GB"], waterResistance:"IP68"}},
+
+    // SAMSUNG
+
+// SAMSUNG S25 ULTRA - done
+    {id:"s-s25u", brand:"Samsung", model:"Galaxy S25 Ultra", os:"Android", segment:"premium", is5g:true, inStock:true,
+     image:"images/samsung/s25ultratitanio.jpeg",
+     colors:[
+       {name:"Preto", hex:"#0e0e0f", img:"images/samsung/s25ultratitanio.jpeg"}
+     ],
+     prices:{normal:8799, base:6499, medio:5899},
+     specs:{battery:"5000 mAh", camera:"200 Mp + 50 Mp + 50 Mp + 10 Mp • 12MP frontal", osVersion:"Android 15 One UI 7", chipset:"Snapdragon 8 Elite for Galaxy Qualcomm SM8750-AB", 
+     display:"6.9\" Dynamic AMOLED 2X 120Hz", ram:"12 GB", storage:["256 GB"], waterResistance:"IP68", extras:["S-Pen"]}},
+
+// SAMSUNG S25 - done
+    {id:"s-s25", brand:"Samsung", model:"Galaxy S25", os:"Android", segment:"premium", is5g:true, inStock:true,
+     image:"images/samsung/s25prata.jpeg",
+     colors:[
+       {name:"Prata", hex:"#CFCFCF", img:"images/samsung/s25prata.jpeg"}
+     ],
+     prices:{normal:5499, base:4499, medio:4099},
+     specs:{battery:"4000 mAh", camera:"50 Mp + 12 Mp + 10 MpP • 12MP frontal", osVersion:"Android 15 One UI 7", chipset:"Snapdragon 8 Elite for Galaxy Qualcomm SM8750-AB", 
+     display:"6.2\" Dynamic AMOLED 2x 120Hz", ram:"12 GB", storage:["256 GB"], waterResistance:"IP68",}},
+
+// SAMSUNG S24 FE - done
+    {id:"s-s24fe", brand:"Samsung", model:"Galaxy S24 FE", os:"Android", segment:"intermediario", is5g:true, inStock:true,
+     image:"images/samsung/s24fegrafite.jpeg",
+     colors:[
+       {name:"Grafite", hex:"#222", img:"images/samsung/s24fegrafite.jpeg"},
+       {name:"Azul",    hex:"#6aa9ff", img:"images/samsung/s24feazul.jpeg"},
+       {name:"Cinza",    hex:"#CFCFCF", img:"images/samsung/s24fecinza.jpeg"}
+     ],
+     prices:{normal:3699, base:2849, medio:2699},
+     specs:{battery:"4700 mAh", camera:"Tripa 50MP + 12MP ultra + 8MP 3x • 10MP frontal", osVersion:"Android 14 One UI 6.1", chipset:"SAMSUNG Exynos 2400e", 
+     display:"6.7\" Dynamic AMOLED 2x 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"IP68"}},
+
+// SAMSUNG A56 - done
+    {id:"s-a56", brand:"Samsung", model:"Galaxy A56 5G", os:"Android", segment:"intermediario", is5g:true, inStock:true,
+     image:"images/samsung/a56preto.jpeg",
+     colors:[
+       {name:"Preto",  hex:"#000000", img:"images/samsung/a56preto.jpeg"},
+       {name:"Branco", hex:"#FFFFFF",  img:"images/samsung/a56branco.jpeg"}
+     ],
+     prices:{normal:2299, base:2079, medio:1899},
+     specs:{battery:"5000 mAh", camera:"Tripa 50MP + 12MP + 5MP • 12MP frontal", osVersion:"Android 15 One UI 7", chipset:"Exynos 1580", 
+     display:"6.7\" Super AMOLED 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"IP67"}},
+
+// SAMSUNG A36 - done
+    {id:"s-a36", brand:"Samsung", model:"Galaxy A36 5G", os:"Android", segment:"intermediario", is5g:true, inStock:true,
+     image:"images/samsung/a36preto.jpeg",
+     colors:[
+       {name:"Preto",  hex:"#000000", img:"images/samsung/a36preto.jpeg"},
+       {name:"Branco", hex:"#FFFFFF", img:"images/samsung/a36branco.jpeg"}
+     ],
+     prices:{normal:1949, base:1899, medio:1699},
+     specs:{battery:"5000 mAh", camera:"Tripa 50MP + 8MP + 5MP • 12MP frontal", osVersion:"Android 15 One UI 7", chipset:"Snapdragon 6 Gen 3 Qualcomm", 
+     display:"6.7\" Super AMOLED 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"IP67"}},
+
+// SAMSUNG A35 - done
+    {id:"s-a35", brand:"Samsung", model:"Galaxy A35 5G", os:"Android", segment:"intermediario", is5g:true, inStock:true,
+     image:"images/samsung/a36preto.jpeg",
+     colors:[
+       {name:"Azul Escuro",  hex:"#00003D", img:"images/samsung/a35azulescuro.jpeg"},
+     ],
+     prices:{normal:1959, base:1679, medio:1499},
+     specs:{battery:"5000 mAh", camera:"Tripa 50MP + 8MP + 5MP • 13MP frontal", osVersion:"Android 14 One UI 6.1", chipset:"Exynos 1380", 
+     display:"6.6\" Super AMOLED 120Hz", ram:"6 GB", storage:["256 GB"], waterResistance:"IP67"}},
+
+// SAMSUNG A26 - done
+     {id:"s-a26", brand:"Samsung", model:"Galaxy A26", os:"Android", segment:"entrada", is5g:true, inStock:true,
+     image:"images/samsung/a26preto.jpeg",
+     colors:[
+       {name:"Preto", hex:"#000000", img:"images/samsung/a26preto.jpeg"},
+     ],
+     prices:{normal:1899, base:1599, medio:1379},
+     specs:{battery:"5000 mAh", camera:"Tripla 50MP + 8MP + 2MP • 13MP frontal", osVersion:"Android 14", chipset:"SAMSUNG Exynos 1280", 
+     display:"6.7\" Super AMOLED 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"—"}},
+
+// SAMSUNG A16 - done
+    {id:"s-a16", brand:"Samsung", model:"Galaxy A16", os:"Android", segment:"entrada", is5g:false, inStock:true,
+     image:"images/samsung/a16preto.jpeg",
+     colors:[
+       {name:"Preto", hex:"#000000", img:"images/samsung/a16preto.jpeg"},
+       {name:"Azul Escuro", hex:"#02032B", img:"images/samsung/a16azulescuro.jpeg"}
+     ],
+     prices:{normal:1399, base:1099, medio:999},
+     specs:{battery:"5000 mAh", camera:"Tripla 50MP + 5MP + 2MP • 13MP frontal", osVersion:"Android 14", chipset:"Helio G99 MediaTek", 
+     display:"6.7\" Superm AMOLED 90Hz", ram:"4 GB", storage:["128 GB"], waterResistance:"—"}},
+
+// SAMSUNG A06 - done
+    {id:"s-a06", brand:"Samsung", model:"Galaxy A06", os:"Android", segment:"entrada", is5g:false, inStock:true,
+     image:"images/samsung/a06preto.jpeg",
+     colors:[
+       {name:"Preto", hex:"#000000", img:"images/samsung/a06preto.jpeg"},
+     ],
+     prices:{normal:899, base:799, medio:699},
+     specs:{battery:"5000 mAh", camera:"50MP + 2MP • 8MP frontal", osVersion:"Android 14 ONE UI 5.1", chipset:"Helio G85 MediaTek", 
+     display:"6.7\" PLS LCD 60Hz", ram:"4 GB", storage:["128 GB"], waterResistance:"—"}},
+
+
+    // MOTOROLA
+
+// EDGE 60 PRO 512GB CINZA - done
+    {id:"m-e60p", brand:"Motorola", model:"Edge 60 pro", os:"Android", segment:"premium", is5g:true, inStock:true,
+     image:"images/motorola/edge60procinza.jpeg",
+     colors:[
+       {name:"Cinza", hex:"#B5B5B5", img:"images/motorola/edge60procinza.jpeg"},
+     ],
+     prices:{normal:3999, base:3799, medio:3499},
+     specs:{battery:"6000 mAh", camera:"Tripa 50MP + 50MP + 10MP ultra • 50MP frontal", osVersion:"Android 15", chipset:"Dimensity 8350 MediaTek", 
+     display:"6.7\" pOLED 120Hz", ram:"12 GB", storage:["512 GB"], waterResistance:"IP68"}},
+
+// EDGE 60 FUSION 256GB CINZA - done
+    {id:"m-e60f", brand:"Motorola", model:"Edge 60 Fusion", os:"Android", segment:"premium", is5g:true, inStock:true,
+     image:"images/motorola/edge60fusioncinza.jpeg",
+     colors:[
+       {name:"Cinza",  hex:"#B5B5B5", img:"images/motorola/edge60fusioncinza.jpeg"}
+     ],
+     prices:{normal:2499, base:2199, medio:1999},
+     specs:{battery:"5200 mAh", camera:"Dupla 50MP + 13MP ultra • 32MP frontal", osVersion:"Android 15 Hello UX", chipset:"Dimensity 7300 MediaTek", 
+     display:"6.7\" pOLED 120Hz", ram:"12 GB", storage:["256 GB"], waterResistance:"IP68"}},
+
+// EDGE 50 FUSION 256GB BLUE REAL - done
+    {id:"m-e50f", brand:"Motorola", model:"Edge 50 fusion", os:"Android", segment:"entrada", is5g:true, inStock:true,
+     image:"images/motorola/edge50fusionazulreal.jpeg",
+     colors:[
+       {name:"Blue Real", hex:"#3C27F5", img:"images/motorola/edge50fusionazulreal.jpeg"}
+     ],
+     prices:{normal:2199, base:1799, medio:1699},
+     specs:{battery:"5000 mAh", camera:"Dupla 50MP + 13MP • 32MP frontal", osVersion:"Android 14 Hello UX", chipset:"Snapdragon 6 Gen 1 Qualcomm SM6450", 
+     display:"6.7\" P-OLED 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"—"}},
+
+// G86 256GB GRAFITE
+    {id:"m-g86", brand:"Motorola", model:"Moto G86", os:"Android", segment:"intermediario", is5g:true, inStock:true,
+     image:"images/motorola/g86grafite.jpeg",
+     colors:[
+       {name:"Grafite",  hex:"#8F8BB0", img:"images/motorola/g86grafite.jpeg"}
+     ],
+     prices:{normal:2299, base:1799, medio:1679},
+     specs:{battery:"5000 mAh", camera:"Dupla 50MP + 2MP • 8MP frontal", osVersion:"Android 13", chipset:"Unisoc T616", 
+     display:"6.5\" IPS 60Hz", ram:"4 GB", storage:["256 GB"], waterResistance:"—"}},
+
+// G56 256GB GRAFITE - done
+     {id:"m-g56", brand:"Motorola", model:"Moto G56", os:"Android", segment:"intermediario", is5g:false, inStock:true,
+     image:"images/motorola/g56grafite.jpeg",
+     colors:[
+       {name:"Grafite",  hex:"#8F8BB0", img:"images/motorola/g56grafite.jpeg"}
+     ],
+     prices:{normal:1799, base:1599, medio:1499},
+     specs:{battery:"5200 mAh", camera:"Dupla 50MP + 8MP • 32MP frontal", osVersion:"Android 15", chipset:"Dimensity 7060 MediaTek", 
+     display:"6.72\" IPS LCD 120Hz", ram:"8 GB", storage:["256 GB"], waterResistance:"—"}},
+
+// G35 128GB GRAFITE - done
+     {id:"m-g35", brand:"Motorola", model:"Moto G35", os:"Android", segment:"entrada", is5g:false, inStock:true,
+     image:"images/motorola/g35grafite.jpeg",
+     colors:[
+       {name:"Grafite",  hex:"#8F8BB0", img:"images/motorola/g35grafite.jpeg"}
+     ],
+     prices:{normal:1099, base:1029, medio:929},
+     specs:{battery:"5000 mAh", camera:"Dupla 50MP + 8MP • 16MP frontal", osVersion:"Android 14", chipset:"T760 Unisoc", 
+     display:"6.72\" IPS LCD 120Hz", ram:"4 GB", storage:["128 GB"], waterResistance:"—"}},
+
+// G15 128GB AZUL ESCURO
+     {id:"m-g15", brand:"Motorola", model:"Moto G15", os:"Android", segment:"entrada", is5g:false, inStock:true,
+     image:"images/motorola/g15azulescuro.jpeg",
+     colors:[
+       {name:"Azul Escuro",  hex:"#2A2C5C", img:"images/motorola/g15azulescuro.jpeg"},
+     ],
+     prices:{normal:899, base:799, medio:699},
+     specs:{battery:"5200 mAh", camera:"Dupla 50MP + 5MP • 8MP frontal", osVersion:"Android 15", chipset:"Helio G81 Extreme MediaTek", 
+     display:"6.72\" IPS LCD 60Hz", ram:"4 GB", storage:["128 GB"], waterResistance:"—"}},
+
+
+  ];
+
+  // ================================================
+  // Utils
+  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+  const $  = (sel, ctx=document) => ctx.querySelector(sel);
+  const fmtBRL = (v) => new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(v);
+
+  // Imagem da variante: usa c.img se existir; senão volta para p.image
+  const variantImageFor = (p, colorName) => {
+    const c = (p.colors || []).find(x => x.name === colorName);
+    return (c && c.img) ? c.img : p.image;
+  };
+
+  // Guarda o aparelho aberto no modal (para refletir troca de cor em ambos)
+  let currentModalPhone = null;
+
+  function updateColorSelection(id, color){
+    const p = phones.find(x => x.id === id);
+    if(!p) return;
+    p._selColorName = color;
+
+    // Atualiza card
+    const card = document.querySelector(`.phone-card[data-id="${id}"]`);
+    if(card){
+      card.querySelectorAll('.sw').forEach(b=>{
+        b.removeAttribute('aria-selected');
+        if((b.dataset.color || b.getAttribute('title')) === color) b.setAttribute('aria-selected','true');
+      });
+      const img = card.querySelector('.imgbox img');
+      const src = variantImageFor(p, color);
+      if(img && src){ img.src = src; img.alt = `${p.model} - ${color}`; }
+    }
+
+    // Atualiza modal se estiver aberto no mesmo aparelho
+    if(currentModalPhone && currentModalPhone.id === id){
+      const group = document.querySelectorAll('#modalSwatches .sw');
+      group.forEach(b=>{
+        b.removeAttribute('aria-selected');
+        if(b.getAttribute('title') === color) b.setAttribute('aria-selected','true');
+      });
+      const img = $('#modalImg');
+      const ph  = $('#modalPh');
+      const src = variantImageFor(p, color);
+      if(src){ img.src = src; img.alt = `${p.model} - ${color}`; img.hidden=false; ph.style.display='none'; }
+      else   { img.hidden = true; ph.style.display='grid'; ph.textContent = (p.brand||'?')[0]||'?'; }
+    }
+  }
+
+  // ===== Modal helpers =====
+  function buildModal(p){
+    $('#modalTitle').textContent = p.model;
+    const tags = [p.brand, p.os, (p.segment==='entrada'?'Entrada':p.segment==='intermediario'?'Intermediário':'Premium'), p.is5g?'5G':'4G', p.inStock?'Em estoque':'Sob consulta'];
+    $('#modalTags').innerHTML = tags.map(t=>`<span class="chip">${t}</span>`).join('');
+    $('#modalPrices').innerHTML = `
+      <div class="price"><small>Pré-pago</small><strong>${fmtBRL(p.prices.normal)}</strong></div>
+      <div class="price"><small>Plano Control</small><strong>${fmtBRL(p.prices.base)}</strong></div>
+      <div class="price"><small>Plano Pós</small><strong>${fmtBRL(p.prices.medio)}</strong></div>`;
+
+    // Cor ativa
+    const activeName = p._selColorName || (p.colors?.[0]?.name);
+
+    // Swatches no modal
+    $('#modalSwatches').innerHTML = p.colors
+      ? p.colors.map(c => `<button type="button" class="sw" title="${c.name}" style="--sw:${c.hex}" ${c.name===activeName?'aria-selected="true"':''}></button>`).join('')
+      : '';
+
+    // Specs
+    const S = p.specs||{};
+    const specsList = [
+      ['Bateria', S.battery],
+      ['Câmeras', S.camera],
+      ['Sistema', S.osVersion||p.os],
+      ['Processador', S.chipset],
+      ['Tela', S.display],
+      ['RAM', S.ram],
+      ['Armazenamento', Array.isArray(S.storage)?S.storage.join(', '):S.storage],
+      ['Resistência à água', S.waterResistance||'—'],
+      ['Extras', Array.isArray(S.extras)?S.extras.join(', '):S.extras]
+    ].filter(([k,v])=>v);
+    $('#modalSpecs').innerHTML = specsList.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+
+    // Imagem inicial baseada na cor ativa
+    const img = $('#modalImg');
+    const ph  = $('#modalPh');
+    const initialSrc = variantImageFor(p, activeName);
+    if(initialSrc){
+      img.src = initialSrc; img.alt = p.model + (activeName ? ' - ' + activeName : ''); img.hidden = false; ph.style.display='none';
+    } else {
+      img.hidden = true; ph.style.display='grid'; ph.textContent = (p.brand||'?')[0]||'?';
+    }
+  }
+
+  function openModal(p){
+    currentModalPhone = p;
+    buildModal(p);
+    const m = $('#modal');
+    m.classList.add('open');
+    m.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    $('.modal-close', m).focus();
+  }
+  function closeModal(){
+    const m = $('#modal');
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  function createCard(p){
+    const card = document.createElement('article');
+    card.className = 'phone-card';
+    card.setAttribute('role','listitem');
+    card.dataset.brand = p.brand;
+    card.dataset.segmento = p.segment;
+    card.dataset.sistema = p.os;
+    card.dataset.fiveg = String(p.is5g);
+    card.dataset.estq = String(p.inStock);
+    card.dataset.id = p.id;
+
+    const selColor = p._selColorName || (p.colors && p.colors[0]?.name);
+    const imgSrc = variantImageFor(p, selColor);
+
+    card.innerHTML = `
+      <div class="tag-row">
+        <span class="tag">${p.os}</span>
+        <span class="tag">${p.segment === 'entrada' ? 'Entrada' : p.segment === 'intermediario' ? 'Intermediário' : 'Premium'}</span>
+        ${p.is5g ? '<span class="tag">5G</span>' : ''}
+        ${p.inStock ? '<span class="tag" style="border-style:solid; color:var(--ok)">Em estoque</span>' : '<span class="tag" style="color:var(--warn)">Sob consulta</span>'}
+      </div>
+      <div class="imgbox" aria-label="Imagem do aparelho">
+        ${imgSrc
+          ? `<img alt="${p.model}${selColor ? ' - ' + selColor : ''}" src="${imgSrc}" style="width:100%; height:100%; object-fit:contain;"/>`
+          : `<div class="ph">${p.brand[0]}</div>`}
+      </div>
+      <div class="title-row">
+        <h3>${p.model}</h3>
+        <small class="chip">${p.brand}</small>
+      </div>
+      <div class="swatches" aria-label="Cores disponíveis">
+        ${p.colors ? p.colors.map((c,i)=>`<button type="button" class="sw" title="${c.name}" style="--sw:${c.hex}" data-color="${c.name}" ${ (selColor ? c.name===selColor : i===0) ? 'aria-selected="true"' : '' }></button>`).join('') : ''}
+      </div>
+      <div class="prices" aria-label="Preços">
+        <div class="price" title="Preço à vista / sem plano"><small>Pré-pago</small><strong>${fmtBRL(p.prices.normal)}</strong></div>
+        <div class="price" title="Com Plano Base"><small>Plano Controle</small><strong>${fmtBRL(p.prices.base)}</strong></div>
+        <div class="price" title="Com Plano Médio"><small>Plano Pós</small><strong>${fmtBRL(p.prices.medio)}</strong></div>
+      </div>
+      <div class="meta">
+        <span>${p.is5g ? '5G' : '4G'}</span>
+        <button class="btn ghost btn-details" data-id="${p.id}">Ver detalhes</button>
+      </div>
+    `;
+    return card;
+  }
+
+  // Render por marca
+  function render(list){
+    const brands = ['Apple','Samsung','Motorola'];
+    let visibleCount = 0;
+    brands.forEach(b => {
+      const el = document.querySelector(`.track[data-brand="${b}"]`);
+      if(!el) return;
+      el.innerHTML = '';
+      list.filter(p => p.brand === b).forEach(p => {
+        el.appendChild(createCard(p));
+        visibleCount++;
+      });
+    });
+    $('#results').textContent = `${visibleCount} modelo${visibleCount===1?'':'s'}`;
+  }
+
+  // Filtro/ordenação
+  function applyFilters(){
+    const q = $('#q').value.trim().toLowerCase();
+    const seg = $('#segmento').value;
+    const so = $('#so').value;
+    const only5g = $('#f5g').checked;
+    const onlyStock = $('#festoque').checked;
+    const order = $('#ordenar').value;
+
+    let out = phones.filter(p => {
+      if(q && !(p.model.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q))) return false;
+      if(seg && p.segment !== seg) return false;
+      if(so && p.os !== so) return false;
+      if(only5g && !p.is5g) return false;
+      if(onlyStock && !p.inStock) return false;
+      return true;
+    });
+
+    switch(order){
+      case 'az': out.sort((a,b)=> a.model.localeCompare(b.model, 'pt-BR')); break;
+      case 'preco-normal': out.sort((a,b)=> a.prices.normal - b.prices.normal); break;
+      case 'preco-base': out.sort((a,b)=> a.prices.base - b.prices.base); break;
+      case 'preco-medio': out.sort((a,b)=> a.prices.medio - b.prices.medio); break;
+    }
+
+    render(out);
+  }
+
+  // Scroll helpers
+  function hookScrollButtons(){
+    $$('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () =>{
+        const secId = btn.dataset.target;
+        const sec = document.getElementById(secId);
+        const track = sec?.querySelector('.track');
+        if(!track) return;
+        const amount = btn.classList.contains('left') ? -Math.max(260, track.clientWidth*0.6) : Math.max(260, track.clientWidth*0.6);
+        track.scrollBy({left:amount, behavior:'smooth'});
+      });
+    });
+  }
+
+  // Modo vitrine (oculta UI)
+  function toggleVitrine(){
+    document.body.classList.toggle('vitrine');
+    const on = document.body.classList.contains('vitrine');
+    $('#btnVitrine').textContent = on ? 'Sair do modo vitrine' : 'Modo vitrine';
+    if(on) $('#app').focus();
+  }
+
+  // Limpar filtros
+  function clearFilters(){
+    $('#q').value = '';
+    $('#segmento').value = '';
+    $('#so').value = '';
+    $('#f5g').checked = false;
+    $('#festoque').checked = false;
+    $('#ordenar').value = 'az';
+    applyFilters();
+  }
+
+  // Inicialização
+  (function init(){
+    // Render inicial ordenado A-Z
+    phones.sort((a,b)=> a.model.localeCompare(b.model, 'pt-BR'));
+    render(phones);
+    hookScrollButtons();
+
+    // Offset do header para âncoras e responsividade
+    updateStickyOffset();
+    window.addEventListener('resize', updateStickyOffset);
+    const hdr = document.querySelector('header');
+    if('ResizeObserver' in window && hdr){
+      const ro = new ResizeObserver(()=> updateStickyOffset());
+      ro.observe(hdr);
+    }
+
+    // Delegação de eventos — cards (swatches, abrir modal)
+    const appEl = document.getElementById('app');
+    appEl.addEventListener('click', (e)=>{
+      // Clique em cor no card
+      const sw = e.target.closest('.sw');
+      if(sw && appEl.contains(sw)){
+        const wrap = sw.parentElement;
+        wrap.querySelectorAll('.sw').forEach(el=>el.removeAttribute('aria-selected'));
+        sw.setAttribute('aria-selected','true');
+
+        const card = sw.closest('.phone-card');
+        const id    = card?.dataset.id;
+        const color = sw.dataset.color || sw.getAttribute('title');
+        if(id && color) updateColorSelection(id, color);
+
+        e.stopPropagation();
+        return;
+      }
+      // Botão "Ver detalhes"
+      const btn = e.target.closest('.btn-details');
+      if(btn){
+        const p = phones.find(x=> x.id === btn.dataset.id);
+        if(p) openModal(p);
+        return;
+      }
+      // Clique no card abre modal
+      const card = e.target.closest('.phone-card');
+      if(card && !e.target.closest('.sw') && !e.target.closest('.btn-details')){
+        const id = card.dataset.id || card.querySelector('.btn-details')?.dataset.id;
+        const p = phones.find(x=> x.id === id);
+        if(p) openModal(p);
+      }
+    });
+
+    // Enter para abrir modal no card focado
+    appEl.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){
+        const card = e.target.closest && e.target.closest('.phone-card');
+        if(card){
+          const id = card.dataset.id || card.querySelector('.btn-details')?.dataset.id;
+          const p = phones.find(x=> x.id === id);
+          if(p){ e.preventDefault(); openModal(p);} 
+        }
+      }
+    });
+
+    // Modal: troca de cor e fechar
+    const modalEl = document.getElementById('modal');
+    modalEl.addEventListener('click', (e)=>{
+      // Troca de cor dentro do modal
+      const pick = e.target.closest('#modal .sw');
+      if(pick){
+        const color = pick.getAttribute('title');
+        if(currentModalPhone && color){
+          updateColorSelection(currentModalPhone.id, color);
+        }
+        return;
+      }
+      // Fechar por overlay ou botão X
+      if(e.target.id==='modal' || e.target.classList.contains('modal-close')) closeModal();
+    });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+    // Filtros/ordenação
+    ['q','segmento','so','ordenar'].forEach(id => {
+      document.getElementById(id).addEventListener('input', applyFilters);
+      document.getElementById(id).addEventListener('change', applyFilters);
+    });
+    ['f5g','festoque'].forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+    document.getElementById('limpar').addEventListener('click', clearFilters);
+
+    // Rolagem suave em âncoras
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e)=>{
+        const href = a.getAttribute('href');
+        if(href && href.length>1){
+          e.preventDefault();
+          document.querySelector(href)?.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
