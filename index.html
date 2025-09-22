@@ -189,6 +189,59 @@
         min-height:0;            /* CRÍTICO: permite que o filho rolável realmente role */
       }
 
+@media (min-width: 861px){
+  /* Container do modal ocupa até ~a janela e evita "estourar" a tela */
+  .modal{ padding: 24px; }
+  .modal-content{
+    display: grid;                 /* evita empilhar tudo em coluna no desktop */
+    grid-template-rows: auto 1fr;  /* header (botão fechar) + conteúdo que cresce */
+    max-height: 92dvh;             /* altura travada ao viewport dinâmico */
+    overflow: hidden;              /* rolagem só dentro do corpo */
+  }
+
+  /* Grade principal: mídia à esquerda | detalhes à direita */
+  .modal-grid{
+    display: grid !important;      /* desfaz o flex aplicado globalmente */
+    grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.2fr);
+    gap: 20px;
+    padding: 20px;
+    align-items: stretch;
+    min-height: 0;                 /* crítico p/ rolagem funcionar */
+  }
+
+  /* Mídia se adapta sem "empurrar" o texto para fora */
+  .modal-media{
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    max-height: calc(92dvh - 160px); /* reserva espaço p/ topo + paddings */
+    overflow: hidden;
+  }
+  .modal-media img{
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Área rolável de texto/especificações */
+  .modal-body{
+    overflow: auto;                /* rolagem aqui! */
+    min-height: 0;                 /* necessário p/ o overflow funcionar */
+    padding-right: 6px;            /* leve respiro p/ scrollbar */
+  }
+
+  /* Swatches e listas não "explodem" a largura */
+  #modalSwatches{ flex-wrap: wrap; gap: 8px; }
+  .specs{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Pequena melhoria de acessibilidade da rolagem em qualquer tamanho */
+.modal-body{ scrollbar-gutter: stable both-edges; }
+
     .helper{
       font-size: 15px;
     }
